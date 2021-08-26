@@ -1,0 +1,35 @@
+"""
+赛题1：
+"""
+import pandas as pd
+import jieba.analyse
+import matplotlib.pyplot as plt
+import numpy as np
+from PIL import Image
+from wordcloud import WordCloud,ImageColorGenerator
+
+from matplotlib import font_manager
+font_manager.fontManager.addfont('./SimHei.ttf')
+plt.rcParams['font.sans-serif'] = ['SimHei']
+
+
+# 数据加载
+path = './earphone_sentiment.csv'
+file_in = open(path, 'r', encoding='utf-8')
+content = file_in.read()
+
+jieba.analyse.set_stop_words('./stopword.txt')  #用停词表过滤
+tags = jieba.analyse.extract_tags(content, topK=1000, withWeight=True)
+tags2 = {i:int(j*10000) for i,j in tags}    #词频乘以1000取整数
+
+graph=np.array(Image.open('./earphone.jpg'))    #把轮廓图片读成像素矩阵
+wc=WordCloud(background_color='White',mask=graph, font_path ='./SimHei.ttf',max_words=200,max_font_size=100)#设置词云背景颜色及形状
+wc.generate_from_frequencies(tags2)      #读进词频数据
+
+#展示图片
+image_colors = ImageColorGenerator(graph)   #选取图片中的颜色
+wc.recolor(color_func=image_colors)
+plt.imshow(wc)
+plt.axis("off")     #去除坐标轴
+plt.show()
+wc.to_file("./wordcloud.jpg")#保存图片
